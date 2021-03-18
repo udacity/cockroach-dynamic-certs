@@ -20,9 +20,8 @@ public class DynamicCertsApplication implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicCertsApplication.class);
 
-    private static final String NODES = "NODES";
     private static final String CLIENT_USERNAME = "CLIENT_USERNAME";
-    private static final String NODE_ALIAS = "NODE_ALIAS";
+    private static final String NODE_ALTERNATIVE_NAMES = "NODE_ALTERNATIVE_NAMES";
 
     private static final String COCKROACH_CERTS_DIR = "/.cockroach-certs";
     private static final String COCKROACH_KEY = "/.cockroach-key/ca.key";
@@ -37,13 +36,11 @@ public class DynamicCertsApplication implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        final List<String> nodes = Arrays.asList(env.getRequiredProperty(NODES).trim().split("\\s+"));
+        final List<String> nodeAlternativeNames = Arrays.asList(env.getRequiredProperty(NODE_ALTERNATIVE_NAMES).trim().split("\\s+"));
         final String clientUsername = env.getProperty(CLIENT_USERNAME, "root");
-        final String nodeAlias = env.getProperty(NODE_ALIAS);
 
-        log.info("{} is [{}]", NODES, nodes.toString());
+        log.info("{} is [{}]", NODE_ALTERNATIVE_NAMES, nodeAlternativeNames);
         log.info("{} is [{}]", CLIENT_USERNAME, clientUsername);
-        log.info("{} is [{}]", NODE_ALIAS, nodeAlias);
 
         List<String> createCACommands = new ArrayList<>();
         createCACommands.add("/cockroach");
@@ -71,24 +68,20 @@ public class DynamicCertsApplication implements ApplicationRunner {
         ProcessBuilder createClient = new ProcessBuilder(createClientCommands);
         handleProcess(createClient);
 
-        for (String node : nodes) {
-            List<String> createNodeCommands = new ArrayList<>();
-            createNodeCommands.add("/cockroach");
-            createNodeCommands.add("cert");
-            createNodeCommands.add("create-node");
-            createNodeCommands.add(node);
-            createNodeCommands.add("localhost");
-            if (StringUtils.hasText(nodeAlias)) {
-                createNodeCommands.add(nodeAlias);
-            }
-            createNodeCommands.add("--certs-dir");
-            createNodeCommands.add(COCKROACH_CERTS_DIR);
-            createNodeCommands.add("--ca-key");
-            createNodeCommands.add(COCKROACH_KEY);
 
-            ProcessBuilder createNode = new ProcessBuilder(createNodeCommands);
-            handleProcess(createNode);
-        }
+        List<String> createNodeCommands = new ArrayList<>();
+        createNodeCommands.add("/cockroach");
+        createNodeCommands.add("cert");
+        createNodeCommands.add("create-node");
+        createNodeCommands.addAll(nodeAlternativeNames);
+        createNodeCommands.add("--certs-dir");
+        createNodeCommands.add(COCKROACH_CERTS_DIR);
+        createNodeCommands.add("--ca-key");
+        createNodeCommands.add(COCKROACH_KEY);
+
+        ProcessBuilder createNode = new ProcessBuilder(createNodeCommands);
+        handleProcess(createNode);
+
 
     }
 
