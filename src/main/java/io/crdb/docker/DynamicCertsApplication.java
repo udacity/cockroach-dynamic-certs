@@ -25,7 +25,7 @@ public class DynamicCertsApplication implements ApplicationRunner {
     private static final String NODE_ALIAS = "NODE_ALIAS";
 
     private static final String COCKROACH_CERTS_DIR = "/.cockroach-certs";
-    private static final String COCKROACH_KEY_DIR = "/.cockroach-key";
+    private static final String COCKROACH_KEY = "/.cockroach-key/ca.key";
 
     public static void main(String[] args) {
         SpringApplication.run(DynamicCertsApplication.class, args);
@@ -52,7 +52,7 @@ public class DynamicCertsApplication implements ApplicationRunner {
         createCACommands.add("--certs-dir");
         createCACommands.add(COCKROACH_CERTS_DIR);
         createCACommands.add("--ca-key");
-        createCACommands.add(COCKROACH_KEY_DIR);
+        createCACommands.add(COCKROACH_KEY);
 
         ProcessBuilder createCA = new ProcessBuilder(createCACommands);
         handleProcess(createCA);
@@ -65,7 +65,8 @@ public class DynamicCertsApplication implements ApplicationRunner {
         createClientCommands.add("--certs-dir");
         createClientCommands.add(COCKROACH_CERTS_DIR);
         createClientCommands.add("--ca-key");
-        createClientCommands.add(COCKROACH_KEY_DIR);
+        createClientCommands.add(COCKROACH_KEY);
+        createClientCommands.add("--also-generate-pkcs8-key");
 
         ProcessBuilder createClient = new ProcessBuilder(createClientCommands);
         handleProcess(createClient);
@@ -83,7 +84,7 @@ public class DynamicCertsApplication implements ApplicationRunner {
             createNodeCommands.add("--certs-dir");
             createNodeCommands.add(COCKROACH_CERTS_DIR);
             createNodeCommands.add("--ca-key");
-            createNodeCommands.add(COCKROACH_KEY_DIR);
+            createNodeCommands.add(COCKROACH_KEY);
 
             ProcessBuilder createNode = new ProcessBuilder(createNodeCommands);
             handleProcess(createNode);
