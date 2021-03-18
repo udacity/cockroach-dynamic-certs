@@ -11,4 +11,8 @@ COPY --from=builder snapshot-dependencies/ ./
 COPY --from=builder spring-boot-loader/ ./
 COPY --from=builder application/ ./
 COPY --from=cockroach /cockroach/ ./
+
+RUN mkdir -pv ./.cockroach-certs
+RUN mkdir -pv ./.cockroach-key
+
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
