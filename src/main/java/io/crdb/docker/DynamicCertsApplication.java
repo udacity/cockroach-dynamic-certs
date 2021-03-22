@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 public class DynamicCertsApplication implements ApplicationRunner {
@@ -30,8 +31,11 @@ public class DynamicCertsApplication implements ApplicationRunner {
         SpringApplication.run(DynamicCertsApplication.class, args);
     }
 
-    @Autowired
-    private Environment env;
+    private final Environment env;
+
+    public DynamicCertsApplication(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -81,8 +85,6 @@ public class DynamicCertsApplication implements ApplicationRunner {
 
         ProcessBuilder createNode = new ProcessBuilder(createNodeCommands);
         handleProcess(createNode);
-
-
     }
 
     private void handleProcess(ProcessBuilder builder) throws IOException, InterruptedException {

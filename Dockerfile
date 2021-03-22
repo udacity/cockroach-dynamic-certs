@@ -15,4 +15,6 @@ COPY --from=cockroach /cockroach/ ./
 RUN mkdir -pv ./.cockroach-certs
 RUN mkdir -pv ./.cockroach-key
 
+EXPOSE 9999
+
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
