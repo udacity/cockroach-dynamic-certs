@@ -18,3 +18,6 @@ RUN mkdir -pv ./.cockroach-key
 EXPOSE 9999
 
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+
+HEALTHCHECK --interval=5m --timeout=3s \
+  CMD curl -f http://localhost:9999/actuator/health | grep UP || exit 1
