@@ -11,9 +11,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
@@ -26,6 +24,7 @@ public class DynamicCertsApplication implements ApplicationRunner {
 
     private static final String COCKROACH_CERTS_DIR = "/.cockroach-certs";
     private static final String COCKROACH_KEY = "/.cockroach-key/ca.key";
+    private static final String DEFAULT_USERNAME = "root";
 
     public static void main(String[] args) {
         SpringApplication.run(DynamicCertsApplication.class, args);
@@ -41,10 +40,17 @@ public class DynamicCertsApplication implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
 
         final List<String> nodeAlternativeNames = Arrays.asList(env.getRequiredProperty(NODE_ALTERNATIVE_NAMES).trim().split("\\s+"));
-        final String clientUsername = env.getProperty(CLIENT_USERNAME, "root");
+        final String clientUsername = env.getProperty(CLIENT_USERNAME, DEFAULT_USERNAME);
 
         log.info("{} is [{}]", NODE_ALTERNATIVE_NAMES, nodeAlternativeNames);
         log.info("{} is [{}]", CLIENT_USERNAME, clientUsername);
+
+        Set<String> usernames = new HashSet<>();
+        usernames.add(clientUsername);
+
+        if (!clientUsername.equals(DEFAULT_USERNAME)){
+            usernames.add(DEFAULT_USERNAME);
+        }
 
         List<String> createCACommands = new ArrayList<>();
         createCACommands.add("/cockroach");
@@ -58,19 +64,21 @@ public class DynamicCertsApplication implements ApplicationRunner {
         ProcessBuilder createCA = new ProcessBuilder(createCACommands);
         handleProcess(createCA);
 
-        List<String> createClientCommands = new ArrayList<>();
-        createClientCommands.add("/cockroach");
-        createClientCommands.add("cert");
-        createClientCommands.add("create-client");
-        createClientCommands.add(clientUsername);
-        createClientCommands.add("--certs-dir");
-        createClientCommands.add(COCKROACH_CERTS_DIR);
-        createClientCommands.add("--ca-key");
-        createClientCommands.add(COCKROACH_KEY);
-        createClientCommands.add("--also-generate-pkcs8-key");
+        for (String username : usernames) {
+            List<String> createClientCommands = new ArrayList<>();
+            createClientCommands.add("/cockroach");
+            createClientCommands.add("cert");
+            createClientCommands.add("create-client");
+            createClientCommands.add(username);
+            createClientCommands.add("--certs-dir");
+            createClientCommands.add(COCKROACH_CERTS_DIR);
+            createClientCommands.add("--ca-key");
+            createClientCommands.add(COCKROACH_KEY);
+            createClientCommands.add("--also-generate-pkcs8-key");
 
-        ProcessBuilder createClient = new ProcessBuilder(createClientCommands);
-        handleProcess(createClient);
+            ProcessBuilder createClient = new ProcessBuilder(createClientCommands);
+            handleProcess(createClient);
+        }
 
 
         List<String> createNodeCommands = new ArrayList<>();
