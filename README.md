@@ -3,7 +3,6 @@
 
 ## Building the Image
 ```bash
-./mvnw clean package
 docker build --no-cache -t timveil/cockroachdb-dynamic-certs:latest .
 ```
 
