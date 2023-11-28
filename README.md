@@ -1,5 +1,6 @@
 # CockroachDB Dynamic Certs Client
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/udacity/cockroach-dynamic-certs/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/udacity/cockroach-dynamic-certs/tree/master)
 
 ## Building the Image
 ```bash
