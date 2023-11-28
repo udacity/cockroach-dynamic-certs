@@ -1,0 +1,47 @@
+version: 2.1
+orbs:
+  ucheck: udacity/ucheck@1
+
+executors:
+  base:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+
+commands:
+  docker_setup:
+    steps:
+      - setup_remote_docker:
+          version: 17.09.0-ce
+      - run:
+          name: Log in to docker
+          command: echo ${UDACITY_DOCKER_PASS} | docker login -u ${UDACITY_DOCKER_USER} --password-stdin docker.udacity.com
+
+jobs:
+  release:
+    executor: base
+    steps:
+      - checkout
+      - docker_setup
+      - run:
+          name: Build and push docker image
+          command: |
+            docker build -t docker.udacity.com/udacity/cockroach-dynamic-certs:${CIRCLE_SHA4} .
+            docker push docker.udacity.com/udacity/cockroach-dynamic-certs:${CIRCLE_SHA1}
+
+workflows:
+  version: 2
+  test_build_release:
+    jobs:
+      - ucheck/ucheck:
+          context: org-global
+          filters:
+            tags:
+              only: /^ucheck-.*/
+      - release:
+          context: org-global
+          requires:
+            - ucheck/ucheck
+          filters:
+            branches:
+              only: master
