@@ -31,7 +31,7 @@ jobs:
 
 workflows:
   version: 2
-  test_build_release:
+  ci:
     jobs:
       - ucheck/ucheck:
           context: org-global
